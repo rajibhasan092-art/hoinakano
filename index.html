@@ -3,100 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My 360 Viewer</title>
-
-  <link rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.css">
+  <title>My Video Player</title>
 
   <style>
-    * { box-sizing: border-box; }
-
     body {
       margin: 0;
+      padding: 20px;
       background: #111;
       color: white;
       font-family: Arial, sans-serif;
-    }
-
-    header {
-      padding: 14px;
       text-align: center;
     }
 
-    #panorama {
+    h1 {
+      font-size: 24px;
+    }
+
+    video {
       width: 100%;
-      height: 75vh;
-      min-height: 320px;
-      background: #222;
+      max-width: 900px;
+      background: black;
+      border-radius: 8px;
     }
 
     #status {
-      padding: 14px;
-      text-align: center;
+      color: #ccc;
       overflow-wrap: anywhere;
     }
   </style>
 </head>
-
 <body>
-  <header>
-    <h2>My 360 Viewer</h2>
-  </header>
+  <h1 id="title">My Video Player</h1>
 
-  <div id="status">Viewer লোড হচ্ছে...</div>
-  <div id="panorama"></div>
+  <video id="player" controls playsinline preload="metadata">
+    Your browser does not support video.
+  </video>
 
-  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.js"></script>
+  <p id="status">ভিডিও লোড হচ্ছে...</p>
 
   <script>
-    async function startViewer() {
-      const status = document.getElementById("status");
-      const params = new URLSearchParams(location.search);
-      const configPath = params.get("config") || "pannellum.json";
+    const params = new URLSearchParams(location.search);
 
+    // URL থেকে ভিডিওর সরাসরি MP4 ঠিকানা নেওয়া হবে
+    const videoURL = params.get("video");
+    const title = params.get("title") || "My Video Player";
+
+    document.getElementById("title").textContent = title;
+    document.title = title;
+
+    const player = document.getElementById("player");
+    const status = document.getElementById("status");
+
+    if (videoURL) {
       try {
-        const configURL = new URL(configPath, location.href);
+        const url = new URL(videoURL);
 
-        // নিরাপত্তার জন্য একই সাইটের JSON গ্রহণ করা হবে
-        if (configURL.origin !== location.origin) {
-          throw new Error("নিজের GitHub Pages-এর JSON URL ব্যবহার করো।");
+        if (url.protocol !== "https:") {
+          throw new Error("HTTPS ভিডিও URL ব্যবহার করো।");
         }
 
-        const response = await fetch(configURL);
+        player.src = url.href;
+        status.textContent = "ভিডিও চালাতে Play চাপো।";
 
-        if (!response.ok) {
-          throw new Error("JSON ফাইল পাওয়া যায়নি।");
-        }
-
-        const config = await response.json();
-
-        if (config.panorama) {
-          config.panorama = new URL(
-            config.panorama,
-            configURL
-          ).href;
-        }
-
-        if (config.scenes) {
-          Object.values(config.scenes).forEach(scene => {
-            if (scene.panorama) {
-              scene.panorama = new URL(
-                scene.panorama,
-                configURL
-              ).href;
-            }
-          });
-        }
-
-        pannellum.viewer("panorama", config);
-        status.textContent = "360° Viewer প্রস্তুত";
-
+        player.addEventListener("error", () => {
+          status.textContent =
+            "ভিডিও লোড হয়নি। সরাসরি MP4 URL পরীক্ষা করো।";
+        });
       } catch (error) {
-        status.textContent = "সমস্যা: " + error.message;
+        status.textContent = error.message;
       }
+    } else {
+      status.textContent =
+        "URL-এর শেষে ?video= দিয়ে সরাসরি MP4 লিংক যোগ করো।";
     }
-
-    startViewer();
   </script>
 </body>
 </html>
