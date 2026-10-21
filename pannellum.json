@@ -1,1 +1,14 @@
+{
+  "default": {
+    "firstScene": "main"
+  },
+  "scenes": {
+    "main": {
+      "title": "FREE] Miss Universe Romania 2026 Live",
+      "type": "equirectangular",
+      "panorama": "https://pannellum.org/images/alma.jpg",
+      "autoLoad": true
+    }
+  }
+}
 
