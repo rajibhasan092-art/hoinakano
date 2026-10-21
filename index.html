@@ -1,71 +1,102 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FREE] Miss Universe Romania 2026 Live</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My 360 Viewer</title>
+
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.css">
 
   <style>
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #101827;
+      background: #111;
       color: white;
       font-family: Arial, sans-serif;
     }
 
-    .container {
-      width: 90%;
-      max-width: 500px;
-      padding: 30px 20px;
+    header {
+      padding: 14px;
       text-align: center;
-      background: #1e293b;
-      border-radius: 15px;
-      box-sizing: border-box;
     }
 
-    h1 {
-      font-size: 26px;
+    #panorama {
+      width: 100%;
+      height: 75vh;
+      min-height: 320px;
+      background: #222;
     }
 
-    p {
-      color: #cbd5e1;
-      line-height: 1.6;
-    }
-
-    .button {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 14px 25px;
-      border-radius: 8px;
-      background: #2563eb;
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .button:hover {
-      background: #1d4ed8;
+    #status {
+      padding: 14px;
+      text-align: center;
+      overflow-wrap: anywhere;
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>My Video Viewer</h1>
-    <p>নিচের বাটনে ক্লিক করে Viewer খুলুন।</p>
+  <header>
+    <h2>My 360 Viewer</h2>
+  </header>
 
-    <a
-      class="button"
-      href="https://www.hrr.mlit.go.jp/chokoku/hatizyuuri/progress/pannellum/pannellum.htm?config=/%5C%2Fallblacksvwallabies2.github.io%2Fmtp%2Fucm%2Fpannellum.json?video-man-utd-v-como-match-lie-uanciqh"
-      target="_blank"
-      rel="noopener noreferrer">
-      Open Viewer
-    </a>
-  </div>
+  <div id="status">Viewer লোড হচ্ছে...</div>
+  <div id="panorama"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.js"></script>
+
+  <script>
+    async function startViewer() {
+      const status = document.getElementById("status");
+      const params = new URLSearchParams(location.search);
+      const configPath = params.get("config") || "pannellum.json";
+
+      try {
+        const configURL = new URL(configPath, location.href);
+
+        // নিরাপত্তার জন্য একই সাইটের JSON গ্রহণ করা হবে
+        if (configURL.origin !== location.origin) {
+          throw new Error("নিজের GitHub Pages-এর JSON URL ব্যবহার করো।");
+        }
+
+        const response = await fetch(configURL);
+
+        if (!response.ok) {
+          throw new Error("JSON ফাইল পাওয়া যায়নি।");
+        }
+
+        const config = await response.json();
+
+        if (config.panorama) {
+          config.panorama = new URL(
+            config.panorama,
+            configURL
+          ).href;
+        }
+
+        if (config.scenes) {
+          Object.values(config.scenes).forEach(scene => {
+            if (scene.panorama) {
+              scene.panorama = new URL(
+                scene.panorama,
+                configURL
+              ).href;
+            }
+          });
+        }
+
+        pannellum.viewer("panorama", config);
+        status.textContent = "360° Viewer প্রস্তুত";
+
+      } catch (error) {
+        status.textContent = "সমস্যা: " + error.message;
+      }
+    }
+
+    startViewer();
+  </script>
 </body>
 </html>
